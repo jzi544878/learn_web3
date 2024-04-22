@@ -1,0 +1,48 @@
+const { RippleAPI } = require('ripple-lib');
+const { RippleAPIBroadcast } = require('rippled-ws-client');
+
+const senderAddress = 'YourSenderAddress';
+const senderSecret = 'YourSenderSecret';
+const receiverAddress = 'ReceiverAddress';
+const amount = '1'; // 要发送的 XRP 数量
+const currency = 'XRP';
+
+const senderWallet = {
+  address: senderAddress,
+  secret: senderSecret
+};
+
+const rippleAPI = new RippleAPI({ server: 'wss://s1.ripple.com' });
+
+const sendPayment = async () => {
+  await rippleAPI.connect();
+
+  const payment = {
+    source: {
+      address: senderWallet.address,
+      maxAmount: { value: amount, currency, counterparty: '' }
+    },
+    destination: {
+      address: receiverAddress,
+      amount: { value: amount, currency, counterparty: '' }
+    }
+  };
+
+  const prepared = await rippleAPI.preparePayment(senderWallet.address, payment, {
+    maxLedgerVersionOffset: 75
+  });
+
+  const signedData = rippleAPI.sign(prepared.txJSON, senderWallet.secret);
+  const txID = prepared.txJSON.id;
+
+  const result = await rippleAPI.submit(signedData.signedTransaction);
+  console.log(`XRP sent. Transaction ID: ${txID}`);
+  console.log(result);
+};
+
+sendPayment().then(() => {
+  process.exit(0);
+}).catch((error) => {
+  console.error('Error sending XRP:', error);
+  process.exit(1);
+});
