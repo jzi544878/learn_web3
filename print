@@ -1,0 +1,10 @@
+# 要查询的 Fantom 地址
+address = "0xYourFantomAddress"  # 替换为您的 Fantom 地址
+
+# 查询 Fantom 余额（以 Wei 为单位）
+balance_wei = web3.eth.get_balance(address)
+
+# 将 Wei 转换为 FTM
+balance_ftm = web3.fromWei(balance_wei, 'ether')
+
+print(f"地址 {address} 的余额是 {balance_ftm} FTM")
